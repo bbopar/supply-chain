@@ -1,4 +1,4 @@
-pragma solidity ^0.5.16;
+pragma solidity ^0.4.24;
 
 import "../coffeecore/Ownable.sol";
 import "../coffeeaccesscontrol/FarmerRole.sol";
@@ -10,7 +10,7 @@ import "../coffeeaccesscontrol/ConsumerRole.sol";
 contract SupplyChain is Ownable, FarmerRole, DistributorRole, RetailerRole, ConsumerRole {
 
   // Define 'owner'
-  address payable owner;
+  address owner;
 
   // Define a variable called 'upc' for Universal Product Code (UPC)
   uint  upc;
@@ -77,7 +77,7 @@ contract SupplyChain is Ownable, FarmerRole, DistributorRole, RetailerRole, Cons
 
   // Define a modifer that verifies the Caller
   modifier verifyCaller (address _address) {
-    require(msg.sender == _address); 
+    require(msg.sender == _address, "verifies the Caller");
     _;
   }
 
@@ -92,7 +92,7 @@ contract SupplyChain is Ownable, FarmerRole, DistributorRole, RetailerRole, Cons
     _;
     uint _price = items[_upc].productPrice;
     uint amountToReturn = msg.value - _price;
-    address payable consumer = address(uint(items[_upc].consumerID));
+    address consumer = address(uint(items[_upc].consumerID));
     consumer.transfer(amountToReturn);
   }
 
@@ -163,7 +163,7 @@ contract SupplyChain is Ownable, FarmerRole, DistributorRole, RetailerRole, Cons
   // Define a function 'harvestItem' that allows a farmer to mark an item 'Harvested'
   function harvestItem(
     uint _upc,
-    address payable _originFarmerID,
+    address _originFarmerID,
     string memory _originFarmName,
     string memory _originFarmInformation,
     string memory _originFarmLatitude,
@@ -204,6 +204,7 @@ contract SupplyChain is Ownable, FarmerRole, DistributorRole, RetailerRole, Cons
   harvested(_upc)
   // Call modifier to verify caller of this function
   verifyCaller(items[_upc].originFarmerID)
+
   onlyFarmer
   {
     // Update the appropriate fields
@@ -253,13 +254,13 @@ contract SupplyChain is Ownable, FarmerRole, DistributorRole, RetailerRole, Cons
     checkValue(_upc)
     onlyDistributor
     {
-      address payable buyer = msg.sender;
+      address buyer = msg.sender;
       // Update the appropriate fields - ownerID, distributorID, itemState
       items[_upc].ownerID = buyer;
       items[_upc].distributorID = buyer;
       items[_upc].itemState = State.Sold;
       // Transfer money to farmer
-      address payable farmerToPay = address(uint(items[_upc].originFarmerID));
+      address farmerToPay = address(uint(items[_upc].originFarmerID));
       farmerToPay.transfer(items[_upc].productPrice);
       // emit the appropriate event
       emit Sold(_upc);
@@ -307,7 +308,7 @@ contract SupplyChain is Ownable, FarmerRole, DistributorRole, RetailerRole, Cons
     onlyConsumer
     {
     // Update the appropriate fields - ownerID, consumerID, itemState
-    address payable customer = msg.sender;
+    address customer = msg.sender;
     items[_upc].ownerID = customer;
     items[_upc].consumerID = customer;
     items[_upc].itemState = State.Purchased;
